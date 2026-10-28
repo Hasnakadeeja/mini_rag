@@ -1,4 +1,4 @@
-# mini-rag
+# mini_rag
 
 A small document question-answering tool in Python, built from scratch to
 understand how retrieval-augmented generation (RAG) works.
