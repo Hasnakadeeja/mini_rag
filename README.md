@@ -24,11 +24,27 @@ The gap between the lowest answerable score (0.626) and the highest
 unanswerable one (0.594) is small, so a single threshold is fragile.
 
 ## How to run
-```
-pip install google-genai
-set GEMINI_API_KEY in your environment (never commit your key)
-python embed.py
-```
+
+Requires Python 3.10+ and a Gemini API key from Google AI Studio.
+
+1. Install the library:
+   ```
+   python -m pip install google-genai
+   ```
+2. Set your API key as an environment variable (Windows PowerShell), then reopen the terminal:
+   ```
+   setx GEMINI_API_KEY "your-key-here"
+   ```
+   On macOS/Linux: `export GEMINI_API_KEY="your-key-here"`
+3. Run it:
+   ```
+   python embed.py
+   ```
+   It reads `notes.txt`, chunks and embeds it, then prints the best chunk (or NOT FOUND) for the sample questions in the file.
+
+`chunking.py` is a standalone demo of the chunker. It asks for a chunk size and overlap.
+
+Never commit your API key. This project reads it from the environment so it never appears in the code.
 
 ## What I learned
 - Overlap stops a fact from being cut in half at a chunk boundary.
