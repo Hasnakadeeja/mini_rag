@@ -76,14 +76,12 @@ Never commit your API key. This project reads it from the environment so it neve
 - Real APIs fail sometimes, so calls need retries and clear error handling.
 
 ## Limitations
-- One short document (4 chunks) and a handful of test questions.
 - Chunking is character-based, so chunks can start or end mid-word.
-- Only the single best chunk is used, so an answer split across chunks would be incomplete.
 - The threshold was chosen from five questions and is not tuned.
 - No automated tests yet.
 - Text is sent to Google for embedding and answering, so it is not suitable for private documents.
 
 ## Next
-- Use the top 3 chunks instead of one.
+- Check that the chunks the model cites were actually sent to it
 - A 15-question test set with a results table.
 - Compare Gemini with a local model through Ollama.
