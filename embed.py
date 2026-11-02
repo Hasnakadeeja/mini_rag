@@ -3,6 +3,7 @@ from google import genai
 import math
 from google.genai import errors
 THRESHOLD = 0.6
+import re
 
 def chunk_text(text, size, overlap):
     if overlap >= size:
@@ -79,7 +80,19 @@ def generate_with_retry(prompt, tries=3):
             time.sleep(wait)
     return "The model is busy right now. Please try again later."
 
-
+def check_citations(answer_text, kept):
+    cited = re.findall(r"chunk (\d+)", answer_text)
+    bad = []
+    for n in cited:
+        if int(n) not in kept:
+            bad.append(n)
+    return bad
+"""
+test to check working of check_citations
+print(check_citations("Fee is $3.50 [Source: chunk 1, chunk 2]", [1, 2, 3]))
+print(check_citations("Fee is $3.50 [Source: chunk 9]", [1, 2, 3]))
+print(check_citations("I can't find that in the document.", [1, 2, 3]))
+"""
 
 def answer(question):
     matches = top_matches(question)
@@ -104,7 +117,11 @@ Text:
 {context}
 Question: {question}
 """
-    return generate_with_retry(prompt)
+    reply = generate_with_retry(prompt)
+    bad = check_citations(reply, kept)
+    if bad:
+        reply += f"\n[Warning: cited chunk(s) {bad} were not given to the model]"
+    return reply
 
 """
 questions = [
