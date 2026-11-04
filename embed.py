@@ -2,15 +2,17 @@ import time
 from google import genai
 import math
 from google.genai import errors
-THRESHOLD = 0.6
 import re
+import json, os
+
+THRESHOLD = 0.6
 
 def chunk_text(text, size, overlap):
     if overlap >= size:
         raise ValueError("overlap must be smaller than size")
-    
+        
     chunks = []
-    
+            
     step = size - overlap
     for start in range(0, len(text), step):
         chunks.append(text[start:(start+size)])
@@ -23,14 +25,37 @@ client = genai.Client()
 text = open("notes.txt", encoding="utf-8").read()
 chunks = chunk_text(text, 300, 50)
 
-result = client.models.embed_content(
-    model="gemini-embedding-001", 
-    contents=chunks,
-)
 
-vectors = []
-for e in result.embeddings:
-    vectors.append(e.values)
+
+
+CACHE = "vectors.json"
+
+if os.path.exists(CACHE):
+    saved = json.load(open(CACHE, encoding="utf-8"))
+    if saved["chunks"] == chunks:
+        vectors = saved["vectors"]
+        print("loaded from cache")
+    else:
+        vectors = None
+else:
+    vectors = None
+
+if vectors is None:
+    # your existing embed_content call and the loop that builds vectors go here
+
+
+    result = client.models.embed_content(
+        model="gemini-embedding-001", 
+        contents=chunks,
+    )
+
+    vectors = []
+    for e in result.embeddings:
+        vectors.append(e.values)
+
+
+    print("embedded fresh")
+    json.dump({"chunks": chunks, "vectors": vectors}, open(CACHE, "w", encoding="utf-8"))
 
 print(len(chunks))
 print(len(vectors))
@@ -66,7 +91,7 @@ def best_match(question):
     best = scores.index(max(scores))
     return best, scores[best]
 
-def generate_with_retry(prompt, tries=3):
+def generate_with_retry(prompt, tries=5):
     for attempt in range(tries):
         try:
             response = client.models.generate_content(
@@ -165,4 +190,6 @@ for q in questions:
     print("Q:", q)
     print("A:", answer(q))
     print()
+
+
 
