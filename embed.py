@@ -57,6 +57,10 @@ if vectors is None:
     print("embedded fresh")
     json.dump({"chunks": chunks, "vectors": vectors}, open(CACHE, "w", encoding="utf-8"))
 
+for i, c in enumerate(chunks):
+    print(f"--- chunk {i} ---")
+    print(c)
+
 print(len(chunks))
 print(len(vectors))
 print(len(vectors[0]))
@@ -179,6 +183,41 @@ def top_matches(question, k=3):
     pairs.sort(reverse=True)
     return pairs[:k]
 
+
+tests = [
+("How are refunds paid?", {2}),
+("How do I return socks?", {2, 3}),
+("What is the capital of the UAE?", None),
+("When can I request a refund?", {0}),
+("How many seconds do I need to refrain myself from looking at the socks so that I can return it?", {0}),
+("Do you sell shoes?", None),
+("How much does shipping cost?", None),
+("Can I exchange socks for a different size?", None),
+("How do I send socks back?", {2, 3}),
+("What do I owe if my socks smell?", {1, 2}),
+("How do I reset my password?", None),
+("What time does the shop open?", None),
+("Explain The Smell Clause.", {1, 2}),
+("How much is emotional damage fee", {1, 2}),
+("Which polite poem should I recite?", None)
+# ... 12 more, which you write after reading notes.txt
+]
+
+passed = 0
+for question, expected in tests:
+    matches = top_matches(question)
+    kept = [i for score, i in matches if score >= THRESHOLD]
+    if expected is None:
+        ok = (len(kept) == 0)
+    else:
+        ok = bool(expected & set(kept))
+    print("PASS" if ok else "FAIL", "|", question, "|", kept)
+    if ok:
+        passed += 1
+
+print(passed, "/", len(tests))
+
+"""
 questions = [
     "How do I return socks?",
     "What is the smell fee?",
@@ -190,6 +229,8 @@ for q in questions:
     print("Q:", q)
     print("A:", answer(q))
     print()
+
+"""
 
 
 
