@@ -41,9 +41,6 @@ else:
     vectors = None
 
 if vectors is None:
-    # your existing embed_content call and the loop that builds vectors go here
-
-
     result = client.models.embed_content(
         model="gemini-embedding-001", 
         contents=chunks,
@@ -200,9 +197,35 @@ tests = [
 ("Explain The Smell Clause.", {1, 2}),
 ("How much is emotional damage fee", {1, 2}),
 ("Which polite poem should I recite?", None)
-# ... 12 more, which you write after reading notes.txt
 ]
 
+all_matches = []
+for question, expected in tests:
+    all_matches.append(top_matches(question))
+
+def evaluate(threshold):
+    passed = 0
+    failed = []
+    for (question, expected), matches in zip(tests, all_matches):
+        kept = [i for score, i in matches if score >= threshold]
+        if expected is None:
+            ok = (len(kept) == 0)
+        else:
+            ok = bool(expected & set(kept))
+        if ok:
+            passed += 1
+        else:
+            failed.append(question)
+    return passed, failed
+
+for t in [0.60, 0.65, 0.70, 0.75]:
+    print(t, evaluate(t))
+
+print(answer("Can I exchange socks for a different size?"))
+print(answer("Which polite poem should I recite?"))
+
+
+"""
 passed = 0
 for question, expected in tests:
     matches = top_matches(question)
@@ -217,7 +240,7 @@ for question, expected in tests:
 
 print(passed, "/", len(tests))
 
-"""
+
 questions = [
     "How do I return socks?",
     "What is the smell fee?",
